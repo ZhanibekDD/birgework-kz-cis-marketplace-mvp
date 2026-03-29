@@ -1,0 +1,14 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Git: отправить на GitHub",
+      "type": "shell",
+      "command": "git add -A; if (git diff --cached --quiet) { Write-Host 'Нет изменений для коммита.' } else { git commit -m ('sync ' + (Get-Date -Format 'yyyy-MM-dd HH:mm')) }",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
