@@ -1,173 +1,148 @@
-import { CHATS, DEFAULT_SESSION, NOTIFICATIONS, ORDERS, REVIEWS, SERVICES, USERS } from './mockDb.js'
-import { loadJSON, saveJSON, storageKeys } from './storage.js'
-import { ORDER_STATUSES } from '../utils/constants.js'
+import { http, clearTokens } from './httpClient'
 
-const defaultState = {
-  users: USERS,
-  services: SERVICES,
-  orders: ORDERS,
-  chats: CHATS,
-  notifications: NOTIFICATIONS,
-  reviews: REVIEWS,
-  favorites: { 'u-buyer-1': ['srv-1'] },
+function mapService(service) {
+  return {
+    id: service.id,
+    sellerId: service.sellerId,
+    category: service.category,
+    slug: service.slug,
+    title: service.title,
+    shortDescription: service.shortDescription,
+    tags: service.tags?.split(',') ?? [],
+    deliveryDays: service.deliveryDays,
+    packages: (service.packages || []).map((p) => ({ id: p.id, tier: p.tier, name: p.tier, price: p.price, revisions: p.revisions, features: p.features.split(';') })),
+    rating: service.reviews?.length ? service.reviews.reduce((a, b) => a + b.rating, 0) / service.reviews.length : 5,
+    reviewsCount: service.reviews?.length ?? 0,
+  }
 }
 
-const pause = (ms = 80) => new Promise((res) => setTimeout(res, ms))
 
-function getState() {
-  return loadJSON(storageKeys.STATE, defaultState)
+function mapOrder(order) {
+  return {
+    id: order.id,
+    serviceId: order.serviceId,
+    serviceSlug: order.service?.slug,
+    packageId: order.packageId,
+    buyerId: order.buyerId,
+    sellerId: order.sellerId,
+    brief: order.brief,
+    status: order.status,
+    total: order.total,
+    createdAt: order.createdAt,
+    deadline: order.deadline,
+  }
 }
 
-function setState(next) {
-  saveJSON(storageKeys.STATE, next)
+function mapConversation(c, currentUserId) {
+  return {
+    id: c.id,
+    participantIds: [c.userAId, c.userBId],
+    topic: `Диалог #${c.id.slice(0, 6)}`,
+    unreadBy: [],
+    messages: (c.messages || []).map((m) => ({ id: m.id, senderId: m.senderId, text: m.text, time: new Date(m.createdAt).toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'}), date: m.createdAt })),
+  }
 }
 
-function getSession() {
-  return loadJSON(storageKeys.SESSION, DEFAULT_SESSION)
-}
-
-function setSession(next) {
-  saveJSON(storageKeys.SESSION, next)
+function mapUser(u) {
+  return {
+    id: u.id,
+    role: u.role,
+    username: u.username,
+    fullName: u.profile?.fullName,
+    city: u.profile?.city,
+    bio: u.profile?.bio,
+    sellerMetrics: u.sellerProfile ? {
+      responseRate: u.sellerProfile.responseRate,
+      responseTimeHours: u.sellerProfile.responseTimeHours,
+      completionRate: u.sellerProfile.completionRate,
+      repeatBuyers: u.sellerProfile.repeatBuyers,
+    } : undefined,
+  }
 }
 
 export async function bootstrapApp() {
-  await pause()
-  const state = getState()
-  const session = getSession()
-  const authUser = state.users.find((u) => u.id === session.userId) ?? state.users[0]
-  return { ...state, authUser }
+  const [services, me, notifications] = await Promise.all([
+    http.get('/services'),
+    http.get('/auth/me').catch(() => null),
+    http.get('/notifications').catch(() => []),
+  ])
+
+  const authUser = me ? mapUser(me) : { id: 'guest', role: 'guest', fullName: 'Гость' }
+  return {
+    authUser,
+    services: services.map(mapService),
+    users: me ? [mapUser(me), ...(services.map((s) => mapUser(s.seller)).filter(Boolean))] : services.map((s) => mapUser(s.seller)).filter(Boolean),
+    reviews: services.flatMap((s) => (s.reviews || []).map((r) => ({ id: r.id, serviceSlug: s.slug, rating: r.rating, text: r.text }))),
+    orders: me ? (await http.get('/orders').catch(() => [])).map(mapOrder) : [],
+    chats: me ? (await http.get('/messages/conversations').catch(() => [])).map((c) => mapConversation(c, me.id)) : [],
+    notifications: notifications.map((n) => ({ id: n.id, userId: n.userId, type: n.type, title: n.title, actionPath: n.actionPath, date: n.createdAt, read: n.isRead })),
+  }
 }
 
-export async function login({ username }) {
-  await pause()
-  const state = getState()
-  const user = state.users.find((u) => u.username === username)
-  if (!user) throw new Error('Пользователь не найден')
-  setSession({ userId: user.id })
-  return user
+export async function login(payload) {
+  const data = await http.post('/auth/login', payload)
+  http.setTokens(data.accessToken, data.refreshToken)
+  const me = await http.get('/auth/me')
+  return mapUser(me)
 }
 
 export async function register(payload) {
-  await pause()
-  const state = getState()
-  if (state.users.some((u) => u.username === payload.username)) throw new Error('Username уже занят')
-  const user = {
-    id: `u-${Date.now()}`,
-    username: payload.username,
-    fullName: payload.fullName,
-    role: payload.role,
-    city: payload.city,
-    bio: payload.bio || '',
-    rating: 5,
-    completedOrders: 0,
-    stats: { spent: 0, activeOrders: 0, savedServices: 0 },
-  }
-  state.users.push(user)
-  setState(state)
-  setSession({ userId: user.id })
-  return user
+  const data = await http.post('/auth/register', payload)
+  http.setTokens(data.accessToken, data.refreshToken)
+  const me = await http.get('/auth/me')
+  return mapUser(me)
 }
 
 export async function logout() {
-  await pause(20)
-  setSession(DEFAULT_SESSION)
+  await http.post('/auth/logout', {}).catch(() => ({}))
+  clearTokens()
 }
 
 export async function createService(form, sellerId) {
-  await pause()
-  const state = getState()
-  const service = { ...form, id: `srv-${Date.now()}`, sellerId, rating: 5, reviewsCount: 0, ordersInQueue: 0, bookmarks: 0 }
-  state.services.unshift(service)
-  setState(state)
-  return service
+  const created = await http.post('/services', {
+    title: form.title,
+    slug: form.slug,
+    category: form.category,
+    shortDescription: form.shortDescription,
+    deliveryDays: form.deliveryDays || 4,
+    tags: form.tags || ['KZ'],
+    packages: form.packages.map((p) => ({ tier: p.id || p.tier || p.name.toLowerCase(), price: Number(p.price), revisions: Number(p.revisions || 1), features: p.features || ['Scope'] })),
+  })
+  return mapService(created)
 }
 
 export async function updateService(serviceId, patch) {
-  await pause()
-  const state = getState()
-  state.services = state.services.map((s) => (s.id === serviceId ? { ...s, ...patch } : s))
-  setState(state)
+  await http.put(`/services/${serviceId}`, patch)
 }
 
-export async function createOrderDraft({ serviceSlug, packageId, buyerId, brief }) {
-  await pause()
-  const state = getState()
-  const service = state.services.find((s) => s.slug === serviceSlug)
-  if (!service) throw new Error('Услуга не найдена')
-  const pkg = service.packages.find((p) => p.id === packageId) ?? service.packages[0]
-  const draft = {
-    id: `DRAFT-${Math.floor(Math.random() * 9000 + 1000)}`,
-    serviceSlug,
-    packageId: pkg.id,
-    buyerId,
-    sellerId: service.sellerId,
-    total: pkg.price,
-    status: 'draft',
-    createdAt: new Date().toISOString().slice(0, 10),
-    deadline: new Date(Date.now() + service.deliveryDays * 86400000).toISOString().slice(0, 10),
-    brief,
-  }
-  return draft
+export async function createOrderDraft({ serviceSlug, packageId, brief }) {
+  const service = await http.get(`/services/${serviceSlug}`)
+  const pkg = service.packages.find((p) => p.id === packageId) || service.packages[0]
+  return { serviceId: service.id, packageId: pkg.id, brief }
 }
 
 export async function placeOrder(draft) {
-  await pause()
-  const state = getState()
-  const order = { ...draft, id: `BW-${Math.floor(Math.random() * 9000 + 1000)}`, status: 'placed' }
-  state.orders.unshift(order)
-  state.notifications.unshift({
-    id: `n-${Date.now()}`,
-    userId: draft.buyerId,
-    type: 'order',
-    title: `Заказ ${order.id} размещен`,
-    actionPath: '/dashboard/orders',
-    date: new Date().toISOString().slice(0, 10),
-    read: false,
-  })
-  setState(state)
-  return order
+  const created = await http.post('/orders', draft)
+  const full = await http.get(`/orders/${created.id}`).catch(() => created)
+  return mapOrder(full)
 }
 
 export async function updateOrderStatus(orderId, status) {
-  await pause()
-  if (!ORDER_STATUSES.includes(status)) throw new Error('Некорректный статус')
-  const state = getState()
-  state.orders = state.orders.map((order) => (order.id === orderId ? { ...order, status } : order))
-  setState(state)
+  await http.patch(`/orders/${orderId}/status`, { status })
 }
 
 export async function addMessage(chatId, senderId, text) {
-  await pause(30)
-  const state = getState()
-  state.chats = state.chats.map((chat) => {
-    if (chat.id !== chatId) return chat
-    const now = new Date()
-    return {
-      ...chat,
-      messages: [...chat.messages, { id: `m-${Date.now()}`, senderId, text, time: now.toTimeString().slice(0, 5), date: now.toISOString().slice(0, 10) }],
-      unreadBy: chat.participantIds.filter((id) => id !== senderId),
-    }
-  })
-  setState(state)
+  return http.post(`/messages/conversations/${chatId}/messages`, { text })
 }
 
-export async function markConversationRead(chatId, userId) {
-  await pause(20)
-  const state = getState()
-  state.chats = state.chats.map((chat) => (chat.id === chatId ? { ...chat, unreadBy: chat.unreadBy.filter((id) => id !== userId) } : chat))
-  setState(state)
+export async function markConversationRead() {
+  return null
 }
 
 export async function markNotificationRead(notificationId) {
-  await pause(20)
-  const state = getState()
-  state.notifications = state.notifications.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
-  setState(state)
+  return http.patch(`/notifications/${notificationId}/read`, {})
 }
 
 export async function saveProfile(userId, patch) {
-  await pause()
-  const state = getState()
-  state.users = state.users.map((u) => (u.id === userId ? { ...u, ...patch } : u))
-  setState(state)
+  return http.patch('/profile/me', patch)
 }

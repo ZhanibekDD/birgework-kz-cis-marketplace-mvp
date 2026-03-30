@@ -7,8 +7,8 @@ export default function RegisterPage() {
   const navigate = useNavigate()
   const { registerUser, authLoading, authError } = useAuth()
   const { values, errors, setField, validate } = useFormValidation(
-    { fullName: '', username: '', role: 'buyer', city: 'Алматы', bio: '' },
-    (v) => ({ fullName: minLength(v.fullName, 'Имя', 3), username: minLength(v.username, 'Username', 4), city: required(v.city, 'Город') }),
+    { fullName: '', username: '', email: '', password: '', role: 'buyer', city: 'Алматы', bio: '' },
+    (v) => ({ fullName: minLength(v.fullName, 'Имя', 3), username: minLength(v.username, 'Username', 4), city: required(v.city, 'Город'), email: required(v.email, 'Email'), password: minLength(v.password, 'Пароль', 8) }),
   )
 
   return (
@@ -26,6 +26,8 @@ export default function RegisterPage() {
         <div className="grid gap-3 md:grid-cols-2">
           <input value={values.fullName} onChange={(e) => setField('fullName', e.target.value)} placeholder="ФИО" className="w-full rounded-xl bg-slate-100 px-3 py-2" />
           <input value={values.username} onChange={(e) => setField('username', e.target.value)} placeholder="username" className="w-full rounded-xl bg-slate-100 px-3 py-2" />
+          <input value={values.email} onChange={(e) => setField('email', e.target.value)} placeholder="email" className="w-full rounded-xl bg-slate-100 px-3 py-2" />
+          <input type="password" value={values.password} onChange={(e) => setField('password', e.target.value)} placeholder="password" className="w-full rounded-xl bg-slate-100 px-3 py-2" />
           <input value={values.city} onChange={(e) => setField('city', e.target.value)} placeholder="Город" className="w-full rounded-xl bg-slate-100 px-3 py-2" />
           <select value={values.role} onChange={(e) => setField('role', e.target.value)} className="w-full rounded-xl bg-slate-100 px-3 py-2"><option value="buyer">Заказчик</option><option value="seller">Исполнитель</option></select>
         </div>

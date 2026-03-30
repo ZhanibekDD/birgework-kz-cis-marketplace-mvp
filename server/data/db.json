@@ -1,0 +1,160 @@
+{
+  "users": [
+    {
+      "id": "a85ad2bc-aa80-456f-a42e-821fd2985ecb",
+      "email": "aliya@birgework.kz",
+      "username": "aliya_pm",
+      "passwordHash": "a2d679bed5c2f57e3540f88caa01d559c26a0df07df451b9d099d0a84bd5cf05",
+      "role": "buyer",
+      "createdAt": "2026-03-30T10:50:38.219Z"
+    },
+    {
+      "id": "f223d598-c85d-456b-948c-ad2c950c7d91",
+      "email": "nurlan@birgework.kz",
+      "username": "nurlan_ai",
+      "passwordHash": "a2d679bed5c2f57e3540f88caa01d559c26a0df07df451b9d099d0a84bd5cf05",
+      "role": "seller",
+      "createdAt": "2026-03-30T10:50:38.219Z"
+    }
+  ],
+  "profiles": [
+    {
+      "userId": "a85ad2bc-aa80-456f-a42e-821fd2985ecb",
+      "fullName": "Алия Бекенова",
+      "city": "Алматы",
+      "bio": "Product manager",
+      "rating": 5
+    },
+    {
+      "userId": "f223d598-c85d-456b-948c-ad2c950c7d91",
+      "fullName": "Нурлан Жумабек",
+      "city": "Астана",
+      "bio": "AI automation engineer",
+      "rating": 4.9
+    }
+  ],
+  "sellerProfiles": [
+    {
+      "userId": "f223d598-c85d-456b-948c-ad2c950c7d91",
+      "responseRate": 97,
+      "responseTimeHours": 2,
+      "completionRate": 95,
+      "repeatBuyers": 15,
+      "earningsMonth": 540000,
+      "earningsPending": 120000
+    }
+  ],
+  "buyerAccounts": [
+    {
+      "userId": "a85ad2bc-aa80-456f-a42e-821fd2985ecb",
+      "totalSpent": 760000,
+      "activeOrders": 2,
+      "savedServices": 4
+    }
+  ],
+  "services": [
+    {
+      "id": "60fdc286-8e00-4a2c-94eb-1c70c8aa9149",
+      "sellerId": "f223d598-c85d-456b-948c-ad2c950c7d91",
+      "category": "ai",
+      "slug": "telegram-ai-sales-bot",
+      "title": "Telegram AI-бот для продаж",
+      "shortDescription": "Интеграция с CRM и аналитикой.",
+      "tags": "Telegram,OpenAI,CRM",
+      "deliveryDays": 4,
+      "isArchived": false,
+      "createdAt": "2026-03-30T10:50:38.219Z"
+    }
+  ],
+  "packages": [
+    {
+      "id": "7969283b-5bf9-4e28-a47c-08a21311164c",
+      "serviceId": "60fdc286-8e00-4a2c-94eb-1c70c8aa9149",
+      "tier": "basic",
+      "price": 55000,
+      "revisions": 1,
+      "features": "1 сценарий;FAQ"
+    },
+    {
+      "id": "7ac4866f-2d94-4937-8507-ad937c9d9159",
+      "serviceId": "60fdc286-8e00-4a2c-94eb-1c70c8aa9149",
+      "tier": "standard",
+      "price": 98000,
+      "revisions": 2,
+      "features": "3 сценария;CRM webhook;аналитика"
+    }
+  ],
+  "reviews": [
+    {
+      "id": "be0f934c-bced-49b7-b790-82dc18a44e27",
+      "serviceId": "60fdc286-8e00-4a2c-94eb-1c70c8aa9149",
+      "authorId": "a85ad2bc-aa80-456f-a42e-821fd2985ecb",
+      "rating": 5,
+      "text": "Сильная экспертиза.",
+      "createdAt": "2026-03-30T10:50:38.219Z"
+    }
+  ],
+  "orders": [
+    {
+      "id": "27a492ad-1f11-4927-bc81-9e3dc3b81f2b",
+      "serviceId": "60fdc286-8e00-4a2c-94eb-1c70c8aa9149",
+      "packageId": "7ac4866f-2d94-4937-8507-ad937c9d9159",
+      "buyerId": "a85ad2bc-aa80-456f-a42e-821fd2985ecb",
+      "sellerId": "f223d598-c85d-456b-948c-ad2c950c7d91",
+      "brief": "Интеграция amoCRM",
+      "status": "in_progress",
+      "total": 98000,
+      "createdAt": "2026-03-30T10:50:38.219Z",
+      "deadline": "2026-04-03T10:50:38.221Z"
+    }
+  ],
+  "orderEvents": [
+    {
+      "id": "dc40c813-4d8b-4359-83ad-05308136bc74",
+      "orderId": "27a492ad-1f11-4927-bc81-9e3dc3b81f2b",
+      "actorId": "f223d598-c85d-456b-948c-ad2c950c7d91",
+      "fromStatus": "placed",
+      "toStatus": "in_progress",
+      "note": "Старт",
+      "createdAt": "2026-03-30T10:50:38.219Z"
+    }
+  ],
+  "conversations": [
+    {
+      "id": "5641106b-89a5-4160-ba02-c5aa222c3e6c",
+      "userAId": "a85ad2bc-aa80-456f-a42e-821fd2985ecb",
+      "userBId": "f223d598-c85d-456b-948c-ad2c950c7d91",
+      "createdAt": "2026-03-30T10:50:38.219Z"
+    }
+  ],
+  "messages": [
+    {
+      "id": "2b93e5a2-8651-4c48-8d3c-c5a6309ae2a3",
+      "conversationId": "5641106b-89a5-4160-ba02-c5aa222c3e6c",
+      "senderId": "a85ad2bc-aa80-456f-a42e-821fd2985ecb",
+      "text": "Нужна интеграция с amoCRM.",
+      "isRead": false,
+      "createdAt": "2026-03-30T10:50:38.219Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "e2cb6458-b703-4f3f-b84d-6f72bb6f58c8",
+      "userId": "a85ad2bc-aa80-456f-a42e-821fd2985ecb",
+      "type": "order",
+      "title": "Ваш заказ в работе",
+      "actionPath": "/dashboard/orders",
+      "isRead": false,
+      "createdAt": "2026-03-30T10:50:38.219Z"
+    }
+  ],
+  "favorites": [
+    {
+      "id": "ee9246e2-238f-450b-af0c-f6ac2bd37543",
+      "userId": "a85ad2bc-aa80-456f-a42e-821fd2985ecb",
+      "serviceId": "60fdc286-8e00-4a2c-94eb-1c70c8aa9149",
+      "createdAt": "2026-03-30T10:50:38.219Z"
+    }
+  ],
+  "sessions": []
+}

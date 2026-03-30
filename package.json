@@ -1,13 +1,19 @@
 {
   "name": "birgework-kz-cis-marketplace-mvp",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "npm run backend:dev & npm run frontend:dev",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test src/test/**/*.test.js"
+    "test": "node --test src/test/**/*.test.js",
+    "frontend:dev": "vite",
+    "backend:dev": "npm --prefix server run dev",
+    "backend:start": "npm --prefix server run start",
+    "db:migrate": "npm --prefix server run db:migrate",
+    "db:seed": "npm --prefix server run db:seed",
+    "server:test": "npm --prefix server run test"
   },
   "dependencies": {
     "framer-motion": "^12.6.3",

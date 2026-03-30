@@ -1,61 +1,108 @@
-# BirgeWork — Phase 2 Frontend Foundation
+# BirgeWork — Phase 3 Full-stack Foundation
 
-BirgeWork — product-grade frontend foundation для маркетплейса фриланс-услуг (KZ + CIS) в модели фиксированных пакетов (Kwork-like).
+BirgeWork теперь работает как full-stack foundation: frontend на React + backend API на Node.js с реальной персистентностью, auth, RBAC и backend-driven ключевыми маркетплейс flow.
 
-## Что улучшено в Phase 2
+## Что реализовано в Phase 3
 
-- Усилен архитектурный слой: mock API + storage + utils + hooks + route guards.
-- Реализован session-aware mock auth: guest / buyer / seller, login/register/logout.
-- Добавлен order lifecycle: `draft → placed → in_progress → delivered → revision_requested → completed/canceled/disputed`.
-- Усилен buyer journey: каталог → gig → checkout draft → order details.
-- Усилен seller journey: seller-only routes, управление услугами, метрики в профиле.
-- Прокачан inbox UX: список диалогов, unread, активный поток, отправка сообщений.
-- Прокачан notification center: типы, read/unread, action links.
-- Добавлены формы с валидацией и feedback states.
-- Добавлены smoke/unit тесты ключевых потоков.
+- Добавлен реальный backend сервис в `server/`.
+- Реализованы API модули:
+  - auth (register/login/refresh/logout/me)
+  - services (list/details/create/update)
+  - orders (create/list/details/status transitions)
+  - messages (conversations/send message)
+  - notifications (list/mark read)
+  - profile (update own profile)
+- Реализован RBAC:
+  - seller-only создание/редактирование услуг
+  - buyer-only создание заказа
+  - доступ к своим заказам/сообщениям/уведомлениям
+- Реализована персистентность в `server/data/db.json`.
+- Реализованы migration/seed скрипты (`db:migrate`, `db:seed`) и логическая SQL-схема (`server/db_schema.sql`).
+- Frontend API слой переведен на реальные HTTP endpoints (`src/lib/httpClient.js`, `src/lib/api.js`) с access/refresh token handling.
 
-## Технологии
+## Стек
 
+### Frontend
 - React + Vite
 - React Router
 - Tailwind CSS
-- Node built-in test runner (`node --test`)
-- localStorage-backed mock backend
 
-## Запуск
+### Backend
+- Node.js native HTTP server
+- JSON-backed persistence (file DB)
+- Token auth (signed access/refresh tokens)
+- Role-based authorization
+
+> Примечание: из-за ограничений окружения на установку новых пакетов, выбран dependency-free backend runtime. Архитектурно готово к миграции на Express/Fastify + Postgres/Prisma без изменения frontend контрактов.
+
+## Быстрый старт
 
 ```bash
 npm install
+npm --prefix server install
+```
+
+### Backend setup
+
+```bash
+npm run db:migrate
+npm run db:seed
+npm run backend:dev
+```
+
+### Frontend setup
+
+```bash
+npm run frontend:dev
+```
+
+### Одновременный запуск
+
+```bash
 npm run dev
 ```
 
-## Build & tests
+## Environment
 
-```bash
-npm run build
-npm run test
+### Frontend `.env`
+
+Скопируйте `.env.example`:
+
+```env
+VITE_API_URL=http://localhost:4000/api
 ```
 
-## Архитектура (кратко)
+### Backend `server/.env`
 
-- `src/lib/mockDb.js` — seed data моделей.
-- `src/lib/storage.js` — localStorage abstraction.
-- `src/lib/api.js` — mock API (async operations, session, orders/messages/notifications).
-- `src/context/AuthContext.jsx` — auth/session состояние.
-- `src/context/AppContext.jsx` — app entities и операции.
-- `src/components/common/ProtectedRoute.jsx` — guard для приватных/role routes.
-- `src/pages/orders/OrderDetailsPage.jsx` — жизненный цикл и переходы статусов.
+Скопируйте `server/.env.example`:
 
-## Документация
+```env
+PORT=4000
+CORS_ORIGIN=http://localhost:5173
+JWT_ACCESS_SECRET=replace-with-strong-access-secret
+JWT_REFRESH_SECRET=replace-with-strong-refresh-secret
+```
+
+## Тесты и сборка
+
+```bash
+npm run test
+npm run build
+npm run server:test
+```
+
+## Доп. документация
 
 - `docs/ARCHITECTURE.md`
 - `docs/MOCK_API.md`
 - `docs/ROADMAP.md`
+- `docs/BACKEND_ARCHITECTURE.md`
+- `docs/API_CONTRACTS.md`
+- `docs/AUTH_FLOW.md`
 
-## Next backend phase
+## Next phase
 
-1. Заменить методы `src/lib/api.js` на HTTP client + backend contracts.
-2. Внедрить JWT/refresh + server-side RBAC.
-3. Добавить websocket gateway для chat/notifications.
-4. Реализовать реальные платежи + escrow flow.
-5. Добавить e2e (Playwright/Cypress) для критических путей.
+- Перевод backend persistence на PostgreSQL + Prisma migrations.
+- WebSocket real-time layer для сообщений/уведомлений.
+- E2E сценарии (catalog → checkout → order lifecycle).
+- Hardening security (rate limit, audit logs, CSRF strategy).

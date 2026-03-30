@@ -11,16 +11,18 @@ const root = ReactDOM.createRoot(document.getElementById('root'))
 
 root.render(<div className="container-main py-20 text-center text-slate-500">Загрузка BirgeWork...</div>)
 
-bootstrapApp().then((bootstrap) => {
-  root.render(
-    <React.StrictMode>
-      <BrowserRouter>
-        <AuthProvider initialUser={bootstrap.authUser}>
-          <AppProvider initialState={bootstrap}>
-            <App />
-          </AppProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </React.StrictMode>,
-  )
-})
+bootstrapApp()
+  .catch(() => ({ authUser: { id: 'guest', role: 'guest', fullName: 'Гость' }, services: [], users: [], reviews: [], orders: [], chats: [], notifications: [] }))
+  .then((bootstrap) => {
+    root.render(
+      <React.StrictMode>
+        <BrowserRouter>
+          <AuthProvider initialUser={bootstrap.authUser}>
+            <AppProvider initialState={bootstrap}>
+              <App />
+            </AppProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </React.StrictMode>,
+    )
+  })

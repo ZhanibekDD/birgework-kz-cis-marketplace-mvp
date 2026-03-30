@@ -1,21 +1,19 @@
 # Architecture
 
-## Layering
-- UI pages/components
+## Frontend layers
+- Pages/components UI
 - Context layer (`AuthContext`, `AppContext`)
-- Mock API layer (`src/lib/api.js`)
-- Storage abstraction (`src/lib/storage.js`)
-- Seed dataset (`src/lib/mockDb.js`)
+- API adapter (`src/lib/api.js`)
+- HTTP client with token refresh (`src/lib/httpClient.js`)
+
+## Backend layers
+- HTTP server (`server/src/index.js`)
+- Auth/token library (`server/src/lib/auth.js`)
+- File DB abstraction (`server/src/db/store.js`)
+- Migration/seed scripts (`server/src/db/migrate.js`, `server/src/db/seed.js`)
+- Logical relational schema contract (`server/db_schema.sql`)
 
 ## Why this structure
-- Сохраняется простота разработки.
-- Есть четкая точка замены mock API на реальный backend.
-- UI не зависит от localStorage напрямую.
-- Role-aware route protection централизован в `ProtectedRoute`.
-
-## Data flow
-1. `main.jsx` вызывает `bootstrapApp()`.
-2. Данные передаются в контексты.
-3. UI вызывает методы контекстов.
-4. Контексты вызывают API методы.
-5. API читает/пишет в storage и возвращает обновленный payload.
+- Full-stack vertical slice is runnable now.
+- Frontend no longer depends on mock local DB.
+- Backend can be migrated to PostgreSQL/Prisma while keeping API contracts stable.

@@ -1,26 +1,15 @@
-# Mock API contract
+# Frontend API layer
 
-## Auth
-- `bootstrapApp()`
-- `login({ username })`
-- `register(payload)`
-- `logout()`
+Файл `src/lib/api.js` теперь работает как client adapter к реальному backend API (`/api/*`), а не как local mock DB.
 
-## Services
-- `createService(form, sellerId)`
-- `updateService(serviceId, patch)`
+## Responsibilities
+- маппинг backend payload в frontend shape
+- login/register/logout + token refresh integration
+- сервисы (list/details/create/update)
+- заказы (draft helper/place/status)
+- сообщения/уведомления/профиль
 
-## Orders
-- `createOrderDraft(payload)`
-- `placeOrder(draft)`
-- `updateOrderStatus(orderId, status)`
-
-## Messaging
-- `addMessage(chatId, senderId, text)`
-- `markConversationRead(chatId, userId)`
-
-## Notifications
-- `markNotificationRead(notificationId)`
-
-## Profile
-- `saveProfile(userId, patch)`
+## Transport
+- `src/lib/httpClient.js`
+- access/refresh token persistence в localStorage
+- auto-refresh on 401
